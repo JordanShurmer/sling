@@ -142,6 +142,7 @@ public class WritePipe extends BasePipe {
                     } else {
                         logger.info("writing {}={}",target.getPath() + "@" + key, value);
                         if (!isDryRun()){
+                            properties.remove(key); //remove the old property to account for values of different types
                             properties.put(key, value);
                         }
                     }
