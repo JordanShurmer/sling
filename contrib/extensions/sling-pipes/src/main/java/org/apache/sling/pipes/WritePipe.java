@@ -57,21 +57,28 @@ public class WritePipe extends BasePipe {
     }
 
     /**
-     * convert the configured value in an actual one
-     * @param expression
-     * @return
+     * convert the configured value in an actual one. i.e. interpret the expressions
+     * @param target the resource being written to
+     * @param key the property name being written to
+     * @param input the value being written. a String or String array
+     * @return a value ready to write
      */
-    protected Object computeValue(Resource resource, String key, Object expression) {
-        if (expression instanceof String) {
-            Object value = bindings.instantiateObject((String) expression);
+    protected Object computeValue(Resource target, String key, Object input) {
+
+        if (input instanceof String) {
+            logger.debug("{} is a String type", key);
+            //Strings may be simple strings, patches, or multi value looking strings
+            String expression = (String) input;
+            Object value = bindings.instantiateObject(expression);
             if (value != null && value instanceof String) {
-                //in that case we treat special case like MV or patches
+                //now we treat special case like MV or patches
                 String sValue = (String)value;
                 Matcher patch = addPatch.matcher(sValue);
                 if (patch.matches()) {
+                    logger.debug("{} is actually a patch", key);
                     String newValue = patch.group(1);
-                    String[] actualValues = resource.adaptTo(ValueMap.class).get(key, String[].class);
-                    List<String> newValues = actualValues != null ? new LinkedList<>(Arrays.asList(actualValues)) : new ArrayList<String>();
+                    String[] actualValues = target.adaptTo(ValueMap.class).get(key, String[].class);
+                    List<String> newValues = actualValues != null ? new LinkedList<>(Arrays.asList(actualValues)) : new ArrayList<>();
                     if (!newValues.contains(newValue)) {
                         newValues.add(newValue);
                     }
@@ -79,12 +86,30 @@ public class WritePipe extends BasePipe {
                 }
                 Matcher multiMatcher = multi.matcher(sValue);
                 if (multiMatcher.matches()) {
+                    logger.debug("{} is actually an array", key);
                     return multiMatcher.group(1).split(",");
                 }
             }
             return value;
         }
-        return expression;
+
+        else if (input instanceof  String[]) {
+            logger.debug("{} is an Array of Strings", key);
+            //String arrays -- each String needs to be instantiated
+            String[] expressions;
+            List<Object> returnVal;
+            expressions = (String[]) input;
+
+            returnVal = new ArrayList<>(expressions.length);
+            for (String expression : expressions) {
+                Object value = bindings.instantiateObject(expression);
+                returnVal.add(value);
+            }
+
+            return returnVal.toArray();
+        }
+
+        return input;
     }
 
     @Override

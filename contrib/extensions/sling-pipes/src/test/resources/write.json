@@ -57,6 +57,7 @@
           "jcr:primaryType":"nt:unstructured",
           "jcr:description":"${fruit.name} is a fruit and its color is ${fruit.color}",
           "worm":"${null}",
+          "seeds": "[1 ${fruit.name}, 2 ${fruit.name}, 3 ${fruit.name}]",
           "archive":{
             "jcr:primaryType":"nt:unstructured",
             "wasthereworm":"${fruit.worm}"

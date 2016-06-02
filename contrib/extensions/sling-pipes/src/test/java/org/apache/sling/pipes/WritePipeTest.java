@@ -107,6 +107,25 @@ public class WritePipeTest extends AbstractPipeTest {
     }
 
     @Test
+    public void testMultiValueVariable() throws Exception {
+        String pipePath = PATH_PIPE + "/" + NN_VARIABLE_PIPED;
+        Resource confResource = context.resourceResolver().getResource(pipePath);
+        Pipe pipe = plumber.getPipe(confResource);
+        assertNotNull("pipe should be found", pipe);
+        Iterator<Resource> it = pipe.getOutput();
+        Resource resource = it.next();
+        assertEquals("path should be the one configured in first pipe", pipePath + "/conf/fruit/conf/apple", resource.getPath());
+        context.resourceResolver().commit();
+        ValueMap properties = resource.adaptTo(ValueMap.class);
+        String[] seedsResult = properties.get("seeds", String[].class);
+        assertNotNull("Seeds multivalue property was not created", seedsResult);
+        for (int i = 1; i < 4; i++) {
+            String thisSeed = seedsResult[i-1];
+        }
+
+    }
+
+    @Test
     public void testSimpleTree() throws Exception {
         Resource confResource = context.resourceResolver().getResource(PATH_PIPE + "/" + NN_SIMPLETREE);
         Pipe pipe = plumber.getPipe(confResource);
@@ -122,4 +141,5 @@ public class WritePipeTest extends AbstractPipeTest {
         NodeIterator children = appleNode.getNodes();
         assertTrue("Apple node should have children", children.hasNext());
     }
+
 }
