@@ -182,6 +182,8 @@ public class SlingContextImpl extends OsgiContextImpl {
     }
 
     /**
+     * Returns the singleton resource resolver bound to this context.
+     * It is automatically closed after the test.
      * @return Resource resolver
      */
     public final ResourceResolver resourceResolver() {
